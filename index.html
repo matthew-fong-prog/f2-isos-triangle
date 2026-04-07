@@ -182,8 +182,10 @@ export default function App() {
             className="absolute inset-0 origin-center" 
             style={{
               transform: isFolded ? 'rotateY(-180deg)' : 'rotateY(0deg)',
-              transition: 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)',
-              transformStyle: 'preserve-3d'
+              WebkitTransform: isFolded ? 'rotateY(-180deg)' : 'rotateY(0deg)',
+              transition: 'transform 2s cubic-bezier(0.4, 0, 0.2, 1), -webkit-transform 2s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformStyle: 'preserve-3d',
+              WebkitTransformStyle: 'preserve-3d'
             }}
           >
             <svg viewBox="0 0 400 400" className="w-full h-full">
@@ -204,7 +206,7 @@ export default function App() {
             </svg>
           </div>
 
-          {/* Top Decorative Layer (Labels & Dynamic Dashed Line) */}
+          {/* Top Decorative Layer (Labels) */}
           <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full pointer-events-none z-20">
             {/* Vertex Labels */}
             <text x="200" y="30" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b">A</text>
@@ -215,13 +217,22 @@ export default function App() {
             {/* Center Label (D) fades in with line */}
             <text x="200" y="380" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b"
                   style={{ opacity: showLine ? 1 : 0, transition: 'opacity 1s ease-in-out' }}>D</text>
-
-            {/* Drawing the Altitude Line */}
-            <mask id="lineMask">
-              <rect x="180" y="40" width="40" height={showLine ? 320 : 0} fill="white" style={{ transition: 'height 1s cubic-bezier(0.4, 0, 0.2, 1)' }} />
-            </mask>
-            <line x1="200" y1="45" x2="200" y2="355" stroke="#475569" strokeWidth="3" strokeDasharray="8,8" mask="url(#lineMask)" />
           </svg>
+
+          {/* Altitude Line Layer (Fix for GitHub Pages Base URL Issue) */}
+          <div 
+            className="absolute inset-0 pointer-events-none z-10"
+            style={{
+              clipPath: showLine ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
+              WebkitClipPath: showLine ? 'inset(0 0 0 0)' : 'inset(0 0 100% 0)',
+              transition: 'clip-path 1s cubic-bezier(0.4, 0, 0.2, 1), -webkit-clip-path 1s cubic-bezier(0.4, 0, 0.2, 1)'
+            }}
+          >
+            <svg viewBox="0 0 400 400" className="w-full h-full">
+              {/* Dashed line rendered in its own layer and clipped by the parent div */}
+              <line x1="200" y1="45" x2="200" y2="355" stroke="#475569" strokeWidth="3" strokeDasharray="8,8" />
+            </svg>
+          </div>
 
         </div>
 
