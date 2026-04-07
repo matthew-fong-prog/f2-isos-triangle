@@ -1,0 +1,286 @@
+import React, { useState, useEffect } from 'react';
+import { Play, Pause, SkipForward, SkipBack, RotateCcw } from 'lucide-react';
+
+const steps = [
+  {
+    id: 0,
+    title: "The Isosceles Triangle",
+    desc: "An isosceles triangle has two sides of equal length. Here, the left side (AB) equals the right side (AC).",
+  },
+  {
+    id: 1,
+    title: "The Line of Symmetry",
+    desc: "Let's draw an altitude line straight down from the top vertex (A) to the middle of the base (D).",
+  },
+  {
+    id: 2,
+    title: "Folding the Triangle",
+    desc: "Now, let's fold the right side of the triangle over this center line. Watch closely as it moves!",
+  },
+  {
+    id: 3,
+    title: "Perfect Match",
+    desc: "The right half perfectly overlaps the left half! They are exact mirror images of each other.",
+  },
+  {
+    id: 4,
+    title: "Property 1: Equal Base Angles",
+    desc: "Because the two halves overlap perfectly, the two base angles (∠B and ∠C) must be exactly equal.",
+  },
+  {
+    id: 5,
+    title: "Property 2: Bisected Base",
+    desc: "It also shows that the center line cuts the base into two equal halves (BD = CD).",
+  },
+  {
+    id: 6,
+    title: "Property 3: Bisected Vertex Angle",
+    desc: "Finally, the fold proves that the center line also cuts the top angle (∠A) into two equal halves (∠BAD = ∠CAD).",
+  }
+];
+
+export default function App() {
+  const [currentStep, setCurrentStep] = useState(0);
+  const [isPlaying, setIsPlaying] = useState(false);
+
+  // Derived state for the animations
+  const showLine = currentStep >= 1;
+  const isFolded = currentStep >= 2;
+  const pulseSide = currentStep === 0 || currentStep === 3;
+  const pulseAngle = currentStep === 4;
+  const pulseBase = currentStep === 5;
+  const pulseVertex = currentStep === 6;
+
+  // Auto-play logic
+  useEffect(() => {
+    let timer;
+    if (isPlaying) {
+      timer = setTimeout(() => {
+        if (currentStep < steps.length - 1) {
+          setCurrentStep((s) => s + 1);
+        } else {
+          setIsPlaying(false);
+        }
+      }, 5000); // 5 seconds per step
+    }
+    return () => clearTimeout(timer);
+  }, [isPlaying, currentStep]);
+
+  const togglePlay = () => setIsPlaying(!isPlaying);
+  
+  const next = () => {
+    if (currentStep < steps.length - 1) setCurrentStep((s) => s + 1);
+    setIsPlaying(false);
+  };
+  
+  const prev = () => {
+    if (currentStep > 0) setCurrentStep((s) => s - 1);
+    setIsPlaying(false);
+  };
+  
+  const reset = () => {
+    setCurrentStep(0);
+    setIsPlaying(false);
+  };
+
+  return (
+    <div className="flex flex-col items-center justify-center min-h-screen bg-slate-50 p-4 font-sans text-slate-800">
+      <style>
+        {`
+          @keyframes pulse-amber {
+            0%, 100% { stroke: #2563eb; stroke-width: 3px; }
+            50% { stroke: #f59e0b; stroke-width: 6px; }
+          }
+          @keyframes pulse-red {
+            0%, 100% { stroke: #ef4444; stroke-width: 3px; }
+            50% { stroke: #b91c1c; stroke-width: 6px; }
+          }
+          @keyframes pulse-green {
+            0%, 100% { stroke: #2563eb; stroke-width: 3px; }
+            50% { stroke: #10b981; stroke-width: 6px; }
+          }
+          @keyframes pulse-purple {
+            0%, 100% { stroke: #9333ea; stroke-width: 3px; }
+            50% { stroke: #c084fc; stroke-width: 6px; }
+          }
+          .pulse-side { animation: pulse-amber 1.5s infinite; }
+          .pulse-angle { animation: pulse-red 1.5s infinite; }
+          .pulse-base { animation: pulse-green 1.5s infinite; }
+          .pulse-vertex { animation: pulse-purple 1.5s infinite; }
+          
+          .animate-fade-in {
+            animation: fadeIn 0.5s ease-out forwards;
+          }
+          @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+          }
+        `}
+      </style>
+
+      <div className="bg-white rounded-3xl shadow-xl w-full max-w-2xl p-8 flex flex-col items-center border border-slate-100">
+        
+        {/* Header Area */}
+        <div className="text-center mb-8 h-20">
+          <h1 className="text-2xl font-bold text-slate-800 mb-2 transition-colors duration-300">
+            {steps[currentStep].title}
+          </h1>
+          <p className="text-slate-600 font-medium h-12 flex items-center justify-center transition-all duration-300">
+            {steps[currentStep].desc}
+          </p>
+        </div>
+
+        {/* Interactive Visualization Area */}
+        <div className="relative w-full max-w-[400px] aspect-square flex items-center justify-center bg-slate-50 rounded-2xl mb-8 border border-slate-200" style={{ perspective: '1200px' }}>
+          
+          {/* Overlays / Popups */}
+          <div className="absolute bottom-6 right-6 z-30 flex flex-col items-end pointer-events-none">
+            {currentStep === 3 && (
+              <div className="bg-white/95 px-4 py-2 rounded-xl shadow-lg font-bold text-blue-600 animate-fade-in">
+                Perfect Overlap!
+              </div>
+            )}
+            {currentStep === 4 && (
+              <div className="bg-white/95 px-4 py-2 rounded-xl shadow-lg font-bold text-red-600 animate-fade-in">
+                ∠B = ∠C
+              </div>
+            )}
+            {currentStep === 5 && (
+              <div className="bg-white/95 px-4 py-2 rounded-xl shadow-lg font-bold text-green-600 animate-fade-in">
+                BD = CD
+              </div>
+            )}
+            {currentStep === 6 && (
+              <div className="bg-white/95 px-4 py-2 rounded-xl shadow-lg font-bold text-purple-600 animate-fade-in">
+                ∠BAD = ∠CAD
+              </div>
+            )}
+          </div>
+
+          {/* Left Half Layer (Static Base) */}
+          <div className="absolute inset-0">
+            <svg viewBox="0 0 400 400" className="w-full h-full">
+              {/* Fill */}
+              <polygon points="50,350 200,350 200,50" fill="rgba(59, 130, 246, 0.15)" />
+              {/* Base */}
+              <line x1="50" y1="350" x2="200" y2="350" stroke="#2563eb" strokeWidth="3" className={pulseBase ? "pulse-base" : ""} />
+              {/* Altitude Line (Left View) */}
+              <line x1="200" y1="50" x2="200" y2="350" stroke="#2563eb" strokeWidth="3" />
+              {/* Hypotenuse */}
+              <line x1="50" y1="350" x2="200" y2="50" stroke="#2563eb" strokeWidth="3" className={pulseSide ? "pulse-side" : ""} />
+              {/* Angle Arc */}
+              <path d="M 90,350 A 40,40 0 0,0 67.88,314.24" fill="none" stroke="#ef4444" strokeWidth="3" className={pulseAngle ? "pulse-angle" : ""} />
+              {/* Vertex Angle Arc */}
+              <path d="M 200,110 A 60,60 0 0,1 173.17,103.66" fill="none" stroke={currentStep >= 6 ? "#9333ea" : "transparent"} strokeWidth="3" className={pulseVertex ? "pulse-vertex" : ""} style={{ transition: "stroke 0.5s" }} />
+              {/* Tick Mark on Side */}
+              <line x1="115" y1="195" x2="135" y2="205" stroke="#334155" strokeWidth="3" />
+            </svg>
+          </div>
+
+          {/* Right Half Layer (Animated / Folded) */}
+          <div 
+            className="absolute inset-0 origin-center" 
+            style={{
+              transform: isFolded ? 'rotateY(-180deg)' : 'rotateY(0deg)',
+              transition: 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)',
+              transformStyle: 'preserve-3d'
+            }}
+          >
+            <svg viewBox="0 0 400 400" className="w-full h-full">
+              {/* Fill */}
+              <polygon points="200,50 200,350 350,350" fill="rgba(59, 130, 246, 0.15)" />
+              {/* Base */}
+              <line x1="200" y1="350" x2="350" y2="350" stroke="#2563eb" strokeWidth="3" className={pulseBase ? "pulse-base" : ""} />
+              {/* Altitude Line (Right View) */}
+              <line x1="200" y1="50" x2="200" y2="350" stroke="#2563eb" strokeWidth="3" />
+              {/* Hypotenuse */}
+              <line x1="200" y1="50" x2="350" y2="350" stroke="#2563eb" strokeWidth="3" className={pulseSide ? "pulse-side" : ""} />
+              {/* Angle Arc */}
+              <path d="M 310,350 A 40,40 0 0,1 332.12,314.24" fill="none" stroke="#ef4444" strokeWidth="3" className={pulseAngle ? "pulse-angle" : ""} />
+              {/* Vertex Angle Arc */}
+              <path d="M 200,110 A 60,60 0 0,0 226.83,103.66" fill="none" stroke={currentStep >= 6 ? "#9333ea" : "transparent"} strokeWidth="3" className={pulseVertex ? "pulse-vertex" : ""} style={{ transition: "stroke 0.5s" }} />
+              {/* Tick Mark on Side */}
+              <line x1="265" y1="205" x2="285" y2="195" stroke="#334155" strokeWidth="3" />
+            </svg>
+          </div>
+
+          {/* Top Decorative Layer (Labels & Dynamic Dashed Line) */}
+          <svg viewBox="0 0 400 400" className="absolute inset-0 w-full h-full pointer-events-none z-20">
+            {/* Vertex Labels */}
+            <text x="200" y="30" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b">A</text>
+            <text x="35" y="375" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b">B</text>
+            <text x="365" y="375" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b" 
+                  style={{ opacity: isFolded ? 0 : 1, transition: 'opacity 0.8s ease-in-out' }}>C</text>
+            
+            {/* Center Label (D) fades in with line */}
+            <text x="200" y="380" textAnchor="middle" fontSize="24" fontWeight="bold" fill="#1e293b"
+                  style={{ opacity: showLine ? 1 : 0, transition: 'opacity 1s ease-in-out' }}>D</text>
+
+            {/* Drawing the Altitude Line */}
+            <mask id="lineMask">
+              <rect x="180" y="40" width="40" height={showLine ? 320 : 0} fill="white" style={{ transition: 'height 1s cubic-bezier(0.4, 0, 0.2, 1)' }} />
+            </mask>
+            <line x1="200" y1="45" x2="200" y2="355" stroke="#475569" strokeWidth="3" strokeDasharray="8,8" mask="url(#lineMask)" />
+          </svg>
+
+        </div>
+
+        {/* Control Panel */}
+        <div className="flex flex-col items-center w-full">
+          
+          {/* Progress Indicators */}
+          <div className="flex space-x-3 mb-6">
+            {steps.map((_, i) => (
+              <div 
+                key={i} 
+                onClick={() => { setCurrentStep(i); setIsPlaying(false); }}
+                className={`w-3 h-3 rounded-full cursor-pointer transition-all duration-300 ${
+                  i === currentStep ? 'bg-blue-600 scale-125' : 'bg-slate-300 hover:bg-slate-400'
+                }`}
+                title={`Jump to step ${i + 1}`}
+              />
+            ))}
+          </div>
+
+          {/* Buttons */}
+          <div className="flex items-center space-x-6">
+            <button 
+              onClick={reset}
+              className="p-3 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-50"
+              title="Reset"
+            >
+              <RotateCcw size={24} />
+            </button>
+            
+            <button 
+              onClick={prev}
+              disabled={currentStep === 0}
+              className="p-3 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              title="Previous Step"
+            >
+              <SkipBack size={28} />
+            </button>
+            
+            <button 
+              onClick={togglePlay} 
+              className="p-5 bg-blue-600 text-white rounded-full shadow-lg hover:bg-blue-700 hover:shadow-xl hover:scale-105 active:scale-95 transition-all"
+              title={isPlaying ? "Pause Auto-play" : "Start Auto-play"}
+            >
+              {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" />}
+            </button>
+            
+            <button 
+              onClick={next}
+              disabled={currentStep === steps.length - 1}
+              className="p-3 text-slate-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-colors disabled:opacity-30 disabled:hover:bg-transparent"
+              title="Next Step"
+            >
+              <SkipForward size={28} />
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  );
+}
